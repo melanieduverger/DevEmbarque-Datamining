@@ -1,0 +1,12 @@
+{
+  "name": "Datamining",
+  "version": "0.1.0",
+  "main": "server.js",
+  "dependencies": {
+    "angular-google-maps": "^2.3.3",
+    "ejs": "~1.0.0",
+    "express": "~3.3.4",
+    "socket.io": "~1.2.1"
+  },
+  "author": "Mélanie Duverger, Quentin Vacher & Paul Mirial"
+}
