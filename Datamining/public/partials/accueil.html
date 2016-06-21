@@ -12,7 +12,7 @@
     <div class="col-lg-6">
         <form style="padding-top:20px;">
             <div>
-                <label>Température / Humidité</label>
+                <label>Température / Humidité</label><br>
                 Température :
 
                 <div range-slider orientation="horizontal" min="0" max="50" model-min="temp.min" model-max="temp.max" ng-model="temp.valeur"></div>
@@ -21,42 +21,30 @@
 
                 <div range-slider orientation="horizontal" min="0" max="100" model-min="humidite.min" model-max="humidite.max" ng-model="humidite.valeur"></div>
 
-
-
-                <input type="text" class="form-control" id="temperature" placeholder="Température..."><br>
-                <input type="text" class="form-control" id="humidite" placeholder="Humidité...">
-            </div>
-            <button type="submit" class="btn btn-primary">Afficher les évènements</button>
-        </form>
-        <form style="padding-top:20px;">
-            <div class="form-group">
                 <label>Gyroscope</label>
-                <input type="text" class="form-control" id="gyrox" placeholder="Position x..."><br>
-                <input type="text" class="form-control" id="gyroy" placeholder="Position y..."><br>
-                <input type="text" class="form-control" id="gyroz" placeholder="Position z...">
-            </div>
-            <button type="submit" class="btn btn-danger">Afficher les évènements</button>
-        </form>
-        <form style="padding-top:20px;">
-            <div class="form-group">
+                <div class="form-group">
+                    <div class="btn-group btn-group-md" role="group">
+                        <button type="button" class="btn btn-success">Stable</button>
+                        <button type="button" class="btn btn-warning">Faibles secousses</button>
+                        <button type="button" class="btn btn-danger">Fortes secousses</button>
+                    </div>
+                </div><br><br>
                 <label>Accéléromètre</label>
-                <input type="text" class="form-control" id="accelx" placeholder="Position x..."><br>
-                <input type="text" class="form-control" id="accely" placeholder="Position y..."><br>
-                <input type="text" class="form-control" id="accelz" placeholder="Position z...">
+                <div class="form-group">
+                    <div class="btn-group btn-group-md" role="group">
+                        <button type="button" class="btn btn-success">Faible accélération</button>
+                        <button type="button" class="btn btn-warning">Forte accélération</button>
+                        <button type="button" class="btn btn-danger">Très forte accélération</button>
+                    </div>
+                </div><br>
             </div>
-            <button type="submit" class="btn btn-success">Afficher les évènements</button>
         </form>
     </div>
     <div class="col-lg-6">
-            <ui-gmap-google-map center="map.center" zoom="map.zoom" options="options">
-               <ui-gmap-marker coords="marker.coords" options="marker.options" events="marker.events" idkey="marker.id">
-                 </ui-gmap-marker>
-
-                 <ui-gmap-marker coords="marker2.coords" options="marker2.options" events="marker2.events" idkey="marker2.id">
-                 </ui-gmap-marker>
-
-            </ui-gmap-google-map>
-
+        <ui-gmap-google-map center="map.center" zoom="map.zoom" options="options">
+            <ui-gmap-polyline ng-repeat="p in polylines" path="p.path" stroke="p.stroke" visible='p.visible'
+                  geodesic='p.geodesic' fit="false" editable="p.editable" draggable="p.draggable" icons='p.icons'></ui-gmap-polyline>>
+        </ui-gmap-google-map>
     </div>
 </div>
 
