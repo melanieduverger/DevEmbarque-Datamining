@@ -15,12 +15,25 @@
                 <label>Température / Humidité</label><br>
                 Température :
 
-                <div range-slider orientation="horizontal" min="0" max="50" model-min="temp.min" model-max="temp.max" ng-model="temp.valeur" on-handle-up="updateTemperatureHumidity()"></div>
+                <div range-slider orientation="horizontal" min="0" max="50" model-min="temp.min" model-max="temp.max" ng-model="temp.valeur" on-handle-up="changeTemperature()"></div>
+
+                <table>
+                    <thead><tr>
+                        <th>ID</th>
+                        <th>Expéditeur</th>
+                        <th>Destinataire</th>
+                    </tr></thead>
+                    <tr ng-repeat="dataTravel in dataTempTravels" ng-click="getDetailsTravel(dataTravel.id)">
+                        <td>{{ dataTravel.id }}</td>
+                        <td>{{ dataTravel.from }}</td>
+                        <td>{{ dataTravel.to }}</td>
+                    </tr>
+                </table>
 
                 Humidité :
 
 
-                <div range-slider orientation="horizontal" min="0" max="100" model-min="humidite.min" model-max="humidite.max" ng-model="humidite.valeur"  on-handle-up="updateTemperatureHumidity()"></div>
+                <div range-slider orientation="horizontal" min="0" max="100" model-min="humidite.min" model-max="humidite.max" ng-model="humidite.valeur"  on-handle-up="changeHumidity()"></div>
 
                 <!--<div ng-repeat="data in datalog" ng-init="data = data.doc">
                     <h3>
@@ -63,9 +76,14 @@
 
     </div>
 
-    <div style="width:800px !important;height:600px !important;">
+    <div style="width:800px !important;height:600px !important; position: absolute; top: 1000px;">
         <canvas id="myChart" ></canvas>
     </div>
+
+    <div style="width:800px !important;height:600px !important;">
+        <canvas id="myChart2" ></canvas>
+    </div>
+
 </div>
 
 <footer style="text-align:center; padding-top:20px;">

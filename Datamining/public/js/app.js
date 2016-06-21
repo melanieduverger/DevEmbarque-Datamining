@@ -35,10 +35,17 @@ var DATABASE_PORT = "5984";
 //var DATABASE_IP = "10.145.128.79";
 //var DATABASE_PORT = "5986"; //nginx
 
-var DATABASE_IP = "10.145.128.79";
+var DATABASE_IP = "192.168.71.160";
 
 
 
 //var DATABASE_NAME = "datalog";
 var DATABASE_NAME = "datalogtest";
+
+
+var ARRAY_TRAVEL_ASSOCIATION = {
+    24: { from: "Orléans", to: "Aix-en-Provence" },
+    25: { from: "Orléans", to: "Strasbourg" },
+    26: { from: "Pau", to: "Saint Nazaire" }
+};
 
