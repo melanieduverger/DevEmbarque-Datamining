@@ -4,6 +4,7 @@
   "main": "server.js",
   "dependencies": {
     "angular-google-maps": "^2.3.3",
+    "chart.js": "^2.1.6",
     "ejs": "~1.0.0",
     "express": "~3.3.4"
   },

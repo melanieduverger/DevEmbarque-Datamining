@@ -15,12 +15,26 @@
                 <label>Température / Humidité</label><br>
                 Température :
 
-                <div range-slider orientation="horizontal" min="0" max="50" model-min="temp.min" model-max="temp.max" ng-model="temp.valeur"></div>
+                <div range-slider orientation="horizontal" min="0" max="50" model-min="temp.min" model-max="temp.max" ng-model="temp.valeur" on-handle-up="updateTemperatureHumidity()"></div>
 
                 Humidité :
 
-                <div range-slider orientation="horizontal" min="0" max="100" model-min="humidite.min" model-max="humidite.max" ng-model="humidite.valeur"></div>
 
+                <div range-slider orientation="horizontal" min="0" max="100" model-min="humidite.min" model-max="humidite.max" ng-model="humidite.valeur"  on-handle-up="updateTemperatureHumidity()"></div>
+
+                <!--<div ng-repeat="data in datalog" ng-init="data = data.doc">
+                    <h3>
+                        {{data.id}}
+                        <em>{{data.Temperature}}</em>
+                        <em>{{data.Humidite}}</em>
+                    </h3>
+                </div>-->
+
+            </div>
+            <button type="submit" class="btn btn-primary">Afficher les évènements</button>
+        </form>
+        <form style="padding-top:20px;">
+            <div class="form-group">
                 <label>Gyroscope</label>
                 <div class="form-group">
                     <div class="btn-group btn-group-md" role="group">
@@ -41,10 +55,16 @@
         </form>
     </div>
     <div class="col-lg-6">
+
         <ui-gmap-google-map center="map.center" zoom="map.zoom" options="options">
             <ui-gmap-polyline ng-repeat="p in polylines" path="p.path" stroke="p.stroke" visible='p.visible'
                   geodesic='p.geodesic' fit="false" editable="p.editable" draggable="p.draggable" icons='p.icons'></ui-gmap-polyline>>
         </ui-gmap-google-map>
+
+    </div>
+
+    <div style="width:800px !important;height:600px !important;">
+        <canvas id="myChart" ></canvas>
     </div>
 </div>
 

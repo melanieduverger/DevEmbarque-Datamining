@@ -2,7 +2,7 @@
 
 /* App Module */
 
-var dataminingApp = angular.module('dataminingApp', ['ngRoute', 'uiGmapgoogle-maps', 'ui-rangeSlider']);
+var dataminingApp = angular.module('dataminingApp', ['ngRoute', 'uiGmapgoogle-maps', 'ui-rangeSlider', 'ngResource']);
 
 
 dataminingApp.config(['$routeProvider',
@@ -27,4 +27,18 @@ dataminingApp.config(function(uiGmapGoogleMapApiProvider) {
         libraries: 'weather,geometry,visualization'
     });
 });
+
+
+//var DATABASE_IP = "192.168.127.137";
+var DATABASE_PORT = "5984";
+
+//var DATABASE_IP = "10.145.128.79";
+//var DATABASE_PORT = "5986"; //nginx
+
+var DATABASE_IP = "10.145.128.79";
+
+
+
+//var DATABASE_NAME = "datalog";
+var DATABASE_NAME = "datalogtest";
 
