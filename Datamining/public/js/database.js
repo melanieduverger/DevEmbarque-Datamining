@@ -28,11 +28,12 @@ dataminingApp.factory('Datalog', [ '$resource', function($resource) {
             }
         },
 
+        //view qui renvoie uniquement les id des trajets pour lesquels le taux d'humidité est compris dans l'intervalle souhaité
         'getByHumidity': {
             'method':'GET',
             'url': 'http://'+ DATABASE_IP +':' + DATABASE_PORT + '/' + DATABASE_NAME + '/_design/queries/_view/getByHumidity?startkey=:startHumidity&endkey=:endHumidity',
             'params': {
-                'include_docs':true
+                'include_docs':false
             },
             'isArray':true,
             'transformResponse':function(data) {

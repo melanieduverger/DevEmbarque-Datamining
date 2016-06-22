@@ -35,13 +35,18 @@
 
                 <div range-slider orientation="horizontal" min="0" max="100" model-min="humidite.min" model-max="humidite.max" ng-model="humidite.valeur"  on-handle-up="changeHumidity()"></div>
 
-                <!--<div ng-repeat="data in datalog" ng-init="data = data.doc">
-                    <h3>
-                        {{data.id}}
-                        <em>{{data.Temperature}}</em>
-                        <em>{{data.Humidite}}</em>
-                    </h3>
-                </div>-->
+                <table>
+                    <thead><tr>
+                        <th>ID</th>
+                        <th>Expéditeur</th>
+                        <th>Destinataire</th>
+                    </tr></thead>
+                    <tr ng-repeat="dataTravel in dataHumidityTravels" ng-click="getDetailsTravel(dataTravel.id)">
+                        <td>{{ dataTravel.id }}</td>
+                        <td>{{ dataTravel.from }}</td>
+                        <td>{{ dataTravel.to }}</td>
+                    </tr>
+                </table>
 
             </div>
             <button type="submit" class="btn btn-primary">Afficher les évènements</button>
@@ -71,17 +76,34 @@
 
         <ui-gmap-google-map center="map.center" zoom="map.zoom" options="options">
             <ui-gmap-polyline ng-repeat="p in polylines" path="p.path" stroke="p.stroke" visible='p.visible'
-                  geodesic='p.geodesic' fit="false" editable="p.editable" draggable="p.draggable" icons='p.icons'></ui-gmap-polyline>>
+                  geodesic='p.geodesic' fit="false" editable="p.editable" draggable="p.draggable" icons='p.icons'></ui-gmap-polyline>
+
+            <ui-gmap-circle ng-repeat="c in circles track by c.id" center="c.center" stroke="c.stroke" fill="c.fill" radius="c.radius"
+                visible="c.visible" geodesic="c.geodesic" editable="false" draggable="false" clickable="c.clickable" control="c.control"></ui-gmap-circle>
+
+
         </ui-gmap-google-map>
 
     </div>
 
     <div style="width:800px !important;height:600px !important; position: absolute; top: 1000px;">
-        <canvas id="myChart" ></canvas>
+        <canvas id="chart" ></canvas>
     </div>
 
-    <div style="width:800px !important;height:600px !important;">
-        <canvas id="myChart2" ></canvas>
+    <div>
+        <h1>Informations sur le trajet</h1>
+
+        <p>Départ : le {{travelInfos.startTime}}</p>
+        <p>Arrivée : le {{travelInfos.endTime}}</p>
+
+        <p>Température moyenne : {{ travelInfos.meanTemp }} °C </p>
+        <p>Température minimum : {{ travelInfos.minTemp }} °C </p>
+        <p>Température maximum : {{ travelInfos.maxTemp }} °C </p>
+
+        <p>Taux d'humidité moyen : {{ travelInfos.meanHum }} % </p>
+        <p>Taux d'humidité  minimum : {{ travelInfos.minHum }} % </p>
+        <p>Taux d'humidité  maximum : {{ travelInfos.maxHum }} % </p>
+
     </div>
 
 </div>

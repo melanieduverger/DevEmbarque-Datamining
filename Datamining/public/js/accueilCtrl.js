@@ -1,13 +1,14 @@
 dataminingApp.controller('accueilCtrl', ['$scope', '$routeParams', 'uiGmapGoogleMapApi', 'Datalog',
     function ($scope, $routeParams, GoogleMapApi, Datalog) {
 
-        var ctx = document.getElementById("myChart");
+        var ctx = document.getElementById("chart");
         var myLineChart;
-        var ctx2 = document.getElementById("myChart2");
-        var myLineChart2;
-        $scope.map = {center: {latitude: 47.845114, longitude: 1.940584 }, zoom: 14 };
+		$scope.map = {center: {latitude: 47.845114, longitude: 1.940584 }, zoom: 14 };
         $scope.options = {scrollwheel: true};
         $scope.polylines = [];
+
+        $scope.circles = [];
+        var idCircle = 1;
 
         $scope.path = [];
 
@@ -56,7 +57,18 @@ dataminingApp.controller('accueilCtrl', ['$scope', '$routeParams', 'uiGmapGoogle
 
         $scope.changeHumidity = function() {
             Datalog.getByHumidity( { startHumidity: $scope.humidite.min, endHumidity: $scope.humidite.max }, function(ob) {
+                console.log("data travels received !");
+                //données regroupées par trajet
+                var dataGroupByJourney = _.groupBy(ob, function(d) { return d.value.substr(0,2) });
 
+                $scope.dataHumidityTravels = [];
+                for (var key in dataGroupByJourney){
+                    $scope.dataHumidityTravels.push({
+                        id: key,
+                        from: ARRAY_TRAVEL_ASSOCIATION[key].from,
+                        to: ARRAY_TRAVEL_ASSOCIATION[key].to
+                    });
+                }
 
             });
 
@@ -65,16 +77,34 @@ dataminingApp.controller('accueilCtrl', ['$scope', '$routeParams', 'uiGmapGoogle
         $scope.getDetailsTravel = function(idTravel) {
             if ($scope.path.length > 0) $scope.path = []; //On vide la carte si elle a déja été utilisée
 
-            var distanceBetweenPoints=function(p1,p2){var R=6371,dLat=(p2.latitude-p1.latitude)*Math.PI/180,dLon=(p2.longitude-p1.longitude)*Math.PI/180,a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(p1.latitude*Math.PI/180)*Math.cos(p2.latitude*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2),c=2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)),d=R*c;return d}
+            var distanceBetweenPoints=function(p1,p2){
+                var R=6371,
+                    dLat=(p2.latitude-p1.latitude)*Math.PI/180,
+                    dLon=(p2.longitude-p1.longitude)*Math.PI/180,
+                    a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(p1.latitude*Math.PI/180)*Math.cos(p2.latitude*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2),
+                    c=2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)),
+                    d=R*c;
+                return d}
 
 
             Datalog.getById( { startId: idTravel, endId: idTravel+"9999999" }, function(ob) {
                 console.log("data details received !");
 
+                //Travel Infos
+                $scope.travelInfos = {
+                    startTime: formatDate(new Date(ob[0].value.timestamp*1000)),
+                    endTime: formatDate(new Date(ob[ob.length-1].value.timestamp*1000)),
+                    minTemp : _.minBy(ob, function(o) { return o.value.temperature; }).value.temperature,
+                    maxTemp: _.maxBy(ob, function(o) { return o.value.temperature; }).value.temperature,
+                    meanTemp: _.meanBy(ob, function(o) { return o.value.temperature; }).toString().substr(0,5),
+                    minHum : _.minBy(ob, function(o) { return o.value.humidity; }).value.humidity,
+                    maxHum: _.maxBy(ob, function(o) { return o.value.humidity; }).value.humidity,
+                    meanHum: _.meanBy(ob, function(o) { return o.value.humidity; }).toString().substr(0,5),
+                }
 
-
+                //Carte
                 var lastlat = 0, lastlong = 0;
-                var array = [];
+                var arrayLatLong = [];
                 var lastindex = -1;
                 var stopstartends =[];
 
@@ -103,7 +133,7 @@ dataminingApp.controller('accueilCtrl', ['$scope', '$routeParams', 'uiGmapGoogle
                         {
                             lastlat = obj.value.lat;
                             lastlong = obj.value.long;
-                            array.push({latitude : obj.value.lat , longitude : obj.value.long, corresp : [obj]});   
+                            arrayLatLong.push({latitude : obj.value.lat , longitude : obj.value.long, corresp : [obj]});
                         }
                         else
                         {
@@ -116,13 +146,13 @@ dataminingApp.controller('accueilCtrl', ['$scope', '$routeParams', 'uiGmapGoogle
                 var DIST_STOP =  0.025;
                 var DIST_OUT = 0.07;
                 console.log ("detection stop");
-                for (var i = 0 ; i < array.length - 30 ; i+=50)
+                for (var i = 0 ; i < arrayLatLong.length - 30 ; i+=50)
                 {
                     var midlat = 0 , midlng = 0;
                     for (var j = 0 ; j < 30 ; j++)
                     {
-                        midlat+=array[i+j].latitude;
-                        midlng+=array[i+j].longitude;
+                        midlat+=arrayLatLong[i+j].latitude;
+                        midlng+=arrayLatLong[i+j].longitude;
                     }
                     midlat= midlat/30;
                     midlng= midlng/30;
@@ -130,7 +160,7 @@ dataminingApp.controller('accueilCtrl', ['$scope', '$routeParams', 'uiGmapGoogle
                     console.log("index at " + i);
                     for (var j = 0 ; j < 30 ; j++)
                     {
-                        var dist = distanceBetweenPoints({latitude : midlat,longitude : midlng}, array[i+j]);
+                        var dist = distanceBetweenPoints({latitude : midlat,longitude : midlng}, arrayLatLong[i+j]);
                         if (dist > DIST_STOP) stopdetected = false;
                     }
                     if (stopdetected)
@@ -142,7 +172,7 @@ dataminingApp.controller('accueilCtrl', ['$scope', '$routeParams', 'uiGmapGoogle
                         var continuetest = true;
                         console.log("stop detected");
                         do {
-                            var dist = distanceBetweenPoints({latitude : midlat,longitude : midlng}, array[index]);
+                            var dist = distanceBetweenPoints({latitude : midlat,longitude : midlng}, arrayLatLong[index]);
                             if (dist < DIST_STOP){
                                 if (delay > 0) {
                                     delay--;
@@ -170,7 +200,7 @@ dataminingApp.controller('accueilCtrl', ['$scope', '$routeParams', 'uiGmapGoogle
                                     }
                                     else
                                     {
-                                        console.warn("ne devrais jamais arriver");
+                                        console.warn("ne devrait jamais arriver");
                                         endindex = index;
                                     }
                                     console.log(dist);
@@ -182,14 +212,14 @@ dataminingApp.controller('accueilCtrl', ['$scope', '$routeParams', 'uiGmapGoogle
                                 }
                             }
                             index++;
-                        }while (continuetest && index < array.length);
+                        }while (continuetest && index < arrayLatLong.length);
                         if (endindex == -1) endindex = index-1;
                         continuetest = true;// récupération des valeurs avant le startindex
                         index = endindex;
 
                         var maxloop = 50;
                         do{
-                            var dist = distanceBetweenPoints({latitude : midlat,longitude : midlng}, array[index]);
+                            var dist = distanceBetweenPoints({latitude : midlat,longitude : midlng}, arrayLatLong[index]);
                             if (dist > DIST_STOP)
                             {
                                 startindex = index +3;
@@ -197,23 +227,28 @@ dataminingApp.controller('accueilCtrl', ['$scope', '$routeParams', 'uiGmapGoogle
                             }
                             index--;
                         }while(continuetest && index > 0 && maxloop-- > 0);
-                        console.log("start at " + startindex + " end at " + endindex + " : " + index + " for " + array.length);
+                        console.log("start at " + startindex + " end at " + endindex + " : " + index + " for " + arrayLatLong.length);
                         stopstartends.push({start:startindex,stop:endindex});
                         i = endindex;
                     }
                 }
-                for (var i = 0 ; i < array.length ; i++)
+                for (var i = 0 ; i < arrayLatLong.length ; i++)
                 {
                     var toadd = true;
                     for (var j = 0 ; j < stopstartends.length; j++)
                         if ( i < stopstartends[j].stop && i > stopstartends[j].start)
                             toadd = false;
-                    if (toadd)
-                      $scope.path.push(array[i]);
-                }
-                    
 
-            
+                    if (i != 0
+                        && arrayLatLong[i-1].latitude.toString().substr(0,5) == arrayLatLong[i].latitude.toString().substr(0,5)
+                        && arrayLatLong[i-1].longitude.toString().substr(0,5) == arrayLatLong[i].longitude.toString().substr(0,5)
+                    )
+                        toadd = false;
+
+                    if (toadd)
+                      $scope.path.push({ latitude: arrayLatLong[i].latitude, longitude: arrayLatLong[i].longitude });
+                }
+
                 console.log("path rempli ! " + $scope.path.length);
 
 
@@ -238,9 +273,99 @@ dataminingApp.controller('accueilCtrl', ['$scope', '$routeParams', 'uiGmapGoogle
                     }]
                 });
 
+                for (var i=0; i<stopstartends.length; i++) {
 
+                    var dateDebutStop = arrayLatLong[stopstartends[i].start].corresp[0].value.timestamp;
+                    var dateFinStop = arrayLatLong[stopstartends[i].stop].corresp[0].value.timestamp;
+                    var tempsPasseSecondes = dateFinStop - dateDebutStop;
+
+
+                    $scope.circles.push({
+                        id: idCircle,
+                        center: { latitude: arrayLatLong[stopstartends[i].start].latitude, longitude: arrayLatLong[stopstartends[i].start].longitude },
+                        radius: 50,
+                        stroke: { color: '#08B21F', weight: 2, opacity: 1 },
+                        fill: { color: '#08B21F', opacity: 0.5 },
+                        geodesic: true, // optional: defaults to false
+                        clickable: true, // optional: defaults to true
+                        visible: true, // optional: defaults to true
+                        control: {}
+                    });
+                    idCircle++;
+                }
+
+
+                //Chart
+                displayTemperatureHumidityChart(ob);
             });
         }
+
+        var displayTemperatureHumidityChart = function(data) {
+
+            var datasetChartT = [];
+            var datasetChartH = [];
+            var labelsChart = [];
+
+            for (var i=0; i<data.length; i++) {
+                if (datasetChartT.length == 0 || (data[i].value.temperature != datasetChartT[datasetChartT.length-1]) && data[i].value.timestamp*1000 >  labelsChart[labelsChart.length-1].getTime() + 2*60*1000) {
+                    datasetChartT.push(data[i].value.temperature );
+                    datasetChartH.push(data[i].value.humidity );
+                    labelsChart.push(new Date(data[i].value.timestamp*1000));
+                }
+            }
+
+            var dataChart = {
+                labels: labelsChart,
+                datasets: [
+                    {
+                        label: "Évolution de la température (°C)",
+                        fill: false,
+                        lineTension: 0.1,
+                        borderColor: "rgba(75,192,192,1)",
+                        pointBorderColor: "rgba(75,192,192,1)",
+                        pointBorderWidth: 1,
+                        pointHoverRadius: 5,
+                        pointHoverBackgroundColor: "rgba(75,192,192,1)",
+                        pointHoverBorderColor: "rgba(220,220,220,1)",
+                        pointHoverBorderWidth: 2,
+                        pointRadius: 1,
+                        pointHitRadius: 10,
+                        data: datasetChartT,
+                    },
+                    {
+                        label: "Évolution du taux d'humidité (%)",
+                        fill: false,
+                        lineTension: 0.1,
+                        borderColor: "rgba(125,92,192,1)",
+                        pointBorderColor: "rgba(125,92,192,1)",
+                        pointBorderWidth: 1,
+                        pointHoverRadius: 5,
+                        pointHoverBackgroundColor: "rgba(125,92,192,1)",
+                        pointHoverBorderColor: "rgba(220,220,220,1)",
+                        pointHoverBorderWidth: 2,
+                        pointRadius: 1,
+                        pointHitRadius: 10,
+                        data: datasetChartH,
+                    }
+
+                ]
+            };
+
+            if (myLineChart) myLineChart.destroy();
+
+            myLineChart = new Chart(ctx, {
+                type: 'line',
+                data: dataChart,
+                options: {
+                    scales: {
+                        xAxes: [{
+                            type: 'time',
+                            time: { displayFormats: { quarter: 'h:mm:ss ll MMM YYYY' } }
+                        }]
+                    }
+                }
+            });
+        };
 
 
         $scope.updateTemperatureHumidity = function() {
@@ -520,5 +645,5 @@ function formatDate(date) {
     if (hour.length < 2) hour = '0' + hour;
     if (minuts.length < 2) minuts = '0' + minuts;
 
-    return hour + ":" + minuts + " " + day + "/" + month + "/" + year;
+    return day + "/" + month + "/" + year + " à " + hour + ":" + minuts;
 }

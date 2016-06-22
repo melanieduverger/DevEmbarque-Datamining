@@ -35,7 +35,7 @@ var DATABASE_PORT = "5984";
 //var DATABASE_IP = "10.145.128.79";
 //var DATABASE_PORT = "5986"; //nginx
 
-var DATABASE_IP = "192.168.71.160";
+var DATABASE_IP = "192.168.71.162";
 
 
 
