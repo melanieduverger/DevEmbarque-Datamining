@@ -1,11 +1,11 @@
 dataminingApp.controller('accueilCtrl', ['$scope', '$routeParams', 'uiGmapGoogleMapApi', 'Datalog',
-	function ($scope, $routeParams, GoogleMapApi, Datalog) {
+    function ($scope, $routeParams, GoogleMapApi, Datalog) {
 
         var ctx = document.getElementById("myChart");
         var myLineChart;
         var ctx2 = document.getElementById("myChart2");
         var myLineChart2;
-		$scope.map = {center: {latitude: 47.845114, longitude: 1.940584 }, zoom: 14 };
+        $scope.map = {center: {latitude: 47.845114, longitude: 1.940584 }, zoom: 14 };
         $scope.options = {scrollwheel: true};
         $scope.polylines = [];
 
@@ -32,8 +32,8 @@ dataminingApp.controller('accueilCtrl', ['$scope', '$routeParams', 'uiGmapGoogle
             ];
         });
 
-		$scope.temp = { min: 10, max: 30 };
-		$scope.humidite = { min: 20, max: 60 };
+        $scope.temp = { min: 10, max: 30 };
+        $scope.humidite = { min: 20, max: 60 };
 
 
         $scope.changeTemperature = function() {
@@ -65,36 +65,156 @@ dataminingApp.controller('accueilCtrl', ['$scope', '$routeParams', 'uiGmapGoogle
         $scope.getDetailsTravel = function(idTravel) {
             if ($scope.path.length > 0) $scope.path = []; //On vide la carte si elle a déja été utilisée
 
+            var distanceBetweenPoints=function(p1,p2){var R=6371,dLat=(p2.latitude-p1.latitude)*Math.PI/180,dLon=(p2.longitude-p1.longitude)*Math.PI/180,a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(p1.latitude*Math.PI/180)*Math.cos(p2.latitude*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2),c=2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)),d=R*c;return d}
+
+
             Datalog.getById( { startId: idTravel, endId: idTravel+"9999999" }, function(ob) {
                 console.log("data details received !");
 
+
+
                 var lastlat = 0, lastlong = 0;
+                var array = [];
+                var lastindex = -1;
+                var stopstartends =[];
 
-                for(var i =0; i<(ob.length) ; i++){
-                  var p = { latitude: ob[i].value.lat, longitude: ob[i].value.long};
+                console.log("group");
+                for (var i = 0 ; i < (ob.length) ; i++)
+                {
+                    var obj = ob[i];
+                    if (lastlat == obj.value.lat && lastlong == obj.value.long)
+                    {
+                    }
+                    else
+                    {
+                        if (obj.value.lat <-180 || obj.value.lat > 180 || obj.value.long <-180 || obj.value.long > 180  )
+                            continue;
+                        var toadd = true;
+                        if (lastlat != 0 || lastlong != 0)
+                        {
+                            if (lastlat == obj.value.lat && lastlong == obj.value.long)
+                                continue;
+                            if (i != 0 && Math.abs(obj.value.lat - lastlat) > 0.05)
+                                toadd = false;
+                            if (i != 0 && Math.abs(obj.value.long - lastlong) > 0.05)
+                                toadd = false;
+                        }
+                        if (toadd)
+                        {
+                            lastlat = obj.value.lat;
+                            lastlong = obj.value.long;
+                            array.push({latitude : obj.value.lat , longitude : obj.value.long, corresp : [obj]});   
+                        }
+                        else
+                        {
+                            console.log("non ajouté");
+                        }
+                    }
+                }
+                lastlat = 0, lastlong = 0;
 
-                  if (p.latitude<-180 || p.latitude > 180 || p.longitude<-180 || p.longitude > 180  )
-                    continue;
-                  if (lastlat != 0 || lastlong != 0)
-                  {
-                      if (lastlat.toString().substr(0, 5) == p.latitude.toString().substr(0, 5) && lastlong.toString().substr(0, 6) == p.longitude.toString().substr(0, 6))
+                var DIST_STOP =  0.025;
+                var DIST_OUT = 0.07;
+                console.log ("detection stop");
+                for (var i = 0 ; i < array.length - 30 ; i+=50)
+                {
+                    var midlat = 0 , midlng = 0;
+                    for (var j = 0 ; j < 30 ; j++)
+                    {
+                        midlat+=array[i+j].latitude;
+                        midlng+=array[i+j].longitude;
+                    }
+                    midlat= midlat/30;
+                    midlng= midlng/30;
+                    var stopdetected = true;
+                    console.log("index at " + i);
+                    for (var j = 0 ; j < 30 ; j++)
+                    {
+                        var dist = distanceBetweenPoints({latitude : midlat,longitude : midlng}, array[i+j]);
+                        if (dist > DIST_STOP) stopdetected = false;
+                    }
+                    if (stopdetected)
+                    {
+                        var startindex = -1, endindex = -1;
+                        var delay = 3;
+                        var buffer = 0;
+                        var index = i;
+                        var continuetest = true;
+                        console.log("stop detected");
+                        do {
+                            var dist = distanceBetweenPoints({latitude : midlat,longitude : midlng}, array[index]);
+                            if (dist < DIST_STOP){
+                                if (delay > 0) {
+                                    delay--;
+                                } else {
+                                    if (startindex < 0)
+                                        startindex = index;
+                                    if (startindex < 10)
+                                        startindex = 0;
+                                }
+                                if (buffer > 0)
+                                    buffer --;
+                            }
+                            else
+                            {
+                                if (dist > DIST_OUT)
+                                {
+                                        endindex = index - 3 - buffer;
+                                        continuetest = false;
+                                }
+                                else if (buffer > 2)
+                                {
+                                    if (index - startindex > 6)
+                                    {
+                                        endindex = index - 6;
+                                    }
+                                    else
+                                    {
+                                        console.warn("ne devrais jamais arriver");
+                                        endindex = index;
+                                    }
+                                    console.log(dist);
+                                    continuetest = false;
+                                }
+                                else
+                                {
+                                    buffer++;
+                                }
+                            }
+                            index++;
+                        }while (continuetest && index < array.length);
+                        if (endindex == -1) endindex = index-1;
+                        continuetest = true;// récupération des valeurs avant le startindex
+                        index = endindex;
 
-                      //if (lastlat == p.latitude && lastlong == p.longitude)
-                      continue;
-                  }
-                  var toadd = true;
-                    if (i != 0 && Math.abs(p.latitude - lastlat) > 0.2)
-                      toadd = false;
-                    if (i != 0 && Math.abs(p.longitude - lastlong) > 0.2)
-                      toadd = false;
+                        var maxloop = 50;
+                        do{
+                            var dist = distanceBetweenPoints({latitude : midlat,longitude : midlng}, array[index]);
+                            if (dist > DIST_STOP)
+                            {
+                                startindex = index +3;
+                                continuetest = false;
+                            }
+                            index--;
+                        }while(continuetest && index > 0 && maxloop-- > 0);
+                        console.log("start at " + startindex + " end at " + endindex + " : " + index + " for " + array.length);
+                        stopstartends.push({start:startindex,stop:endindex});
+                        i = endindex;
+                    }
+                }
+                for (var i = 0 ; i < array.length ; i++)
+                {
+                    var toadd = true;
+                    for (var j = 0 ; j < stopstartends.length; j++)
+                        if ( i < stopstartends[j].stop && i > stopstartends[j].start)
+                            toadd = false;
+                    if (toadd)
+                      $scope.path.push(array[i]);
+                }
+                    
 
-                 if (!toadd)
-                    continue;
-                lastlat = p.latitude;
-                lastlong = p.longitude;
-                $scope.path.push(p);
-            }
-                console.log("path rempli !");
+            
+                console.log("path rempli ! " + $scope.path.length);
 
 
                 $scope.polylines[$scope.polylines.length-1].visible = false;
@@ -384,7 +504,7 @@ dataminingApp.controller('accueilCtrl', ['$scope', '$routeParams', 'uiGmapGoogle
 
             });
         }
-	}
+    }
 ]);
 
 function formatDate(date) {
