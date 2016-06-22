@@ -8,3 +8,6 @@ html, body { height: 100%; margin: 0; padding: 0; }
     padding: 1%;
     text-align: center;
 }
+.table tr {
+    cursor: pointer;
+}

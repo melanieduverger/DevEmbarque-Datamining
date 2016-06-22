@@ -17,13 +17,15 @@
 
                 <div range-slider orientation="horizontal" min="0" max="50" model-min="temp.min" model-max="temp.max" ng-model="temp.valeur" on-handle-up="changeTemperature()"></div>
 
-                <table>
-                    <thead><tr>
-                        <th>ID</th>
-                        <th>Expéditeur</th>
-                        <th>Destinataire</th>
-                    </tr></thead>
-                    <tr ng-repeat="dataTravel in dataTempTravels" ng-click="getDetailsTravel(dataTravel.id)">
+                <table ng-hide="tabTempVide" class="table table-hover" id="myTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Expéditeur</th>
+                            <th>Destinataire</th>
+                        </tr>
+                    </thead>
+                    <tr ng-repeat="dataTravel in dataTempTravels" ng-click="getDetailsTravel(dataTravel.id)" class="clickable-row">
                         <td>{{ dataTravel.id }}</td>
                         <td>{{ dataTravel.from }}</td>
                         <td>{{ dataTravel.to }}</td>
@@ -35,13 +37,15 @@
 
                 <div range-slider orientation="horizontal" min="0" max="100" model-min="humidite.min" model-max="humidite.max" ng-model="humidite.valeur"  on-handle-up="changeHumidity()"></div>
 
-                <table>
-                    <thead><tr>
-                        <th>ID</th>
-                        <th>Expéditeur</th>
-                        <th>Destinataire</th>
-                    </tr></thead>
-                    <tr ng-repeat="dataTravel in dataHumidityTravels" ng-click="getDetailsTravel(dataTravel.id)">
+                <table ng-hide="tabHumidVide" class="table table-hover" id="myTable2">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Expéditeur</th>
+                            <th>Destinataire</th>
+                        </tr>
+                    </thead>
+                    <tr ng-repeat="dataTravel in dataHumidityTravels" ng-click="getDetailsTravel(dataTravel.id)" class="clickable-row">
                         <td>{{ dataTravel.id }}</td>
                         <td>{{ dataTravel.from }}</td>
                         <td>{{ dataTravel.to }}</td>
@@ -49,63 +53,46 @@
                 </table>
 
             </div>
-            <button type="submit" class="btn btn-primary">Afficher les évènements</button>
         </form>
-        <form style="padding-top:20px;">
-            <div class="form-group">
-                <label>Gyroscope</label>
-                <div class="form-group">
-                    <div class="btn-group btn-group-md" role="group">
-                        <button type="button" class="btn btn-success">Stable</button>
-                        <button type="button" class="btn btn-warning">Faibles secousses</button>
-                        <button type="button" class="btn btn-danger">Fortes secousses</button>
-                    </div>
-                </div><br><br>
-                <label>Accéléromètre</label>
-                <div class="form-group">
-                    <div class="btn-group btn-group-md" role="group">
-                        <button type="button" class="btn btn-success">Faible accélération</button>
-                        <button type="button" class="btn btn-warning">Forte accélération</button>
-                        <button type="button" class="btn btn-danger">Très forte accélération</button>
-                    </div>
-                </div><br>
-            </div>
-        </form>
+
+        <div style="width:800px !important;height:600px !important;">
+            <canvas id="chart" ></canvas>
+        </div>
     </div>
     <div class="col-lg-6">
+        <div class="col-lg-12">
+            <h1>Informations sur le trajet</h1>
 
-        <ui-gmap-google-map center="map.center" zoom="map.zoom" options="options">
-            <ui-gmap-polyline ng-repeat="p in polylines" path="p.path" stroke="p.stroke" visible='p.visible'
-                  geodesic='p.geodesic' fit="false" editable="p.editable" draggable="p.draggable" icons='p.icons'></ui-gmap-polyline>
+            <div class="col-lg-6">
+                <p><span class="glyphicon glyphicon-home"></span> Départ : le {{travelInfos.startTime}}</p>
+            </div>
+            <div class="col-lg-6">
+                <p><span class="glyphicon glyphicon-map-marker"></span> Arrivée : le {{travelInfos.endTime}}</p>
+            </div>
 
-            <ui-gmap-circle ng-repeat="c in circles track by c.id" center="c.center" stroke="c.stroke" fill="c.fill" radius="c.radius"
-                visible="c.visible" geodesic="c.geodesic" editable="false" draggable="false" clickable="c.clickable" control="c.control"></ui-gmap-circle>
+            <div class="col-lg-6">
+                <p><span class="glyphicon glyphicon-cloud"></span> Température moyenne : {{ travelInfos.meanTemp }} °C </p>
+                <p><span class="glyphicon glyphicon-cloud"></span> Température minimum : {{ travelInfos.minTemp }} °C </p>
+                <p><span class="glyphicon glyphicon-cloud"></span> Température maximum : {{ travelInfos.maxTemp }} °C </p>
+            </div>
+            <div class="col-lg-6">
+                <p><span class="glyphicon glyphicon-tint"></span> Taux d'humidité moyen : {{ travelInfos.meanHum }} % </p>
+                <p><span class="glyphicon glyphicon-tint"></span> Taux d'humidité  minimum : {{ travelInfos.minHum }} % </p>
+                <p><span class="glyphicon glyphicon-tint"></span> Taux d'humidité  maximum : {{ travelInfos.maxHum }} % </p>
+            </div>  
 
+        </div>
 
-        </ui-gmap-google-map>
+        <div class="col-lg-12">
+            <ui-gmap-google-map center="map.center" zoom="map.zoom" options="options">
+                <ui-gmap-polyline ng-repeat="p in polylines" path="p.path" stroke="p.stroke" visible='p.visible'
+                      geodesic='p.geodesic' fit="false" editable="p.editable" draggable="p.draggable" icons='p.icons'></ui-gmap-polyline>
 
+                <ui-gmap-circle ng-repeat="c in circles track by c.id" center="c.center" stroke="c.stroke" fill="c.fill" radius="c.radius"
+                    visible="c.visible" geodesic="c.geodesic" editable="false" draggable="false" clickable="c.clickable" control="c.control"></ui-gmap-circle>
+            </ui-gmap-google-map>
+        </div>
     </div>
-
-    <div style="width:800px !important;height:600px !important; position: absolute; top: 1000px;">
-        <canvas id="chart" ></canvas>
-    </div>
-
-    <div>
-        <h1>Informations sur le trajet</h1>
-
-        <p>Départ : le {{travelInfos.startTime}}</p>
-        <p>Arrivée : le {{travelInfos.endTime}}</p>
-
-        <p>Température moyenne : {{ travelInfos.meanTemp }} °C </p>
-        <p>Température minimum : {{ travelInfos.minTemp }} °C </p>
-        <p>Température maximum : {{ travelInfos.maxTemp }} °C </p>
-
-        <p>Taux d'humidité moyen : {{ travelInfos.meanHum }} % </p>
-        <p>Taux d'humidité  minimum : {{ travelInfos.minHum }} % </p>
-        <p>Taux d'humidité  maximum : {{ travelInfos.maxHum }} % </p>
-
-    </div>
-
 </div>
 
 <footer style="text-align:center; padding-top:20px;">

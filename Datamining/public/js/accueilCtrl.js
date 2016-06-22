@@ -1,6 +1,16 @@
 dataminingApp.controller('accueilCtrl', ['$scope', '$routeParams', 'uiGmapGoogleMapApi', 'Datalog',
     function ($scope, $routeParams, GoogleMapApi, Datalog) {
 
+        $('#myTable').on('click', '.clickable-row', function(event) {
+          $(this).addClass('active').siblings().removeClass('active');
+        });
+        $('#myTable2').on('click', '.clickable-row', function(event) {
+          $(this).addClass('active').siblings().removeClass('active');
+        });
+
+        $scope.tabHumidVide = true;
+        $scope.tabTempVide = true;
+
         var ctx = document.getElementById("chart");
         var myLineChart;
 		$scope.map = {center: {latitude: 47.845114, longitude: 1.940584 }, zoom: 14 };
@@ -51,6 +61,8 @@ dataminingApp.controller('accueilCtrl', ['$scope', '$routeParams', 'uiGmapGoogle
                         to: ARRAY_TRAVEL_ASSOCIATION[key].to
                     });
                 }
+                if($scope.dataTempTravels.length > 0) $scope.tabTempVide = false;
+                else $scope.tabTempVide = true;
             });
 
         };
@@ -69,7 +81,8 @@ dataminingApp.controller('accueilCtrl', ['$scope', '$routeParams', 'uiGmapGoogle
                         to: ARRAY_TRAVEL_ASSOCIATION[key].to
                     });
                 }
-
+                if($scope.dataHumidityTravels.length > 0) $scope.tabHumidVide = false;
+                else $scope.tabHumidVide = true;
             });
 
         };
