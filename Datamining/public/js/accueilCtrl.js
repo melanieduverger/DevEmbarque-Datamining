@@ -89,15 +89,7 @@ dataminingApp.controller('accueilCtrl', ['$scope', '$routeParams', 'uiGmapGoogle
 
         $scope.getDetailsTravel = function(idTravel) {
             if ($scope.path.length > 0) $scope.path = []; //On vide la carte si elle a déja été utilisée
-
-            var distanceBetweenPoints=function(p1,p2){
-                var R=6371,
-                    dLat=(p2.latitude-p1.latitude)*Math.PI/180,
-                    dLon=(p2.longitude-p1.longitude)*Math.PI/180,
-                    a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(p1.latitude*Math.PI/180)*Math.cos(p2.latitude*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2),
-                    c=2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)),
-                    d=R*c;
-                return d}
+            if ($scope.circles.length > 0) $scope.circles = [];
 
 
             Datalog.getById( { startId: idTravel, endId: idTravel+"9999999" }, function(ob) {
@@ -659,4 +651,15 @@ function formatDate(date) {
     if (minuts.length < 2) minuts = '0' + minuts;
 
     return day + "/" + month + "/" + year + " à " + hour + ":" + minuts;
+}
+
+
+function distanceBetweenPoints(p1,p2) {
+    var R=6371,
+        dLat=(p2.latitude-p1.latitude)*Math.PI/180,
+        dLon=(p2.longitude-p1.longitude)*Math.PI/180,
+        a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(p1.latitude*Math.PI/180)*Math.cos(p2.latitude*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2),
+        c=2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)),
+        d=R*c;
+    return d;
 }

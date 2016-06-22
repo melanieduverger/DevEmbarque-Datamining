@@ -1,0 +1,68 @@
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container-fluid">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="#">
+            <img alt="Projet embarqué" src="...">
+          </a>
+        </div>
+      </div>
+</nav>
+
+<div class="container-fluid">
+    <div class="col-lg-6">
+        <a href="#/public/accueil">Température / Humidité</a>
+        <form style="padding-top:20px;">
+            <div class="form-group">
+                <label>Trajet</label>
+
+                <select name="travel" ng-model="selectedTravel" ng-change="changeTravel()">
+                    <option value="0" selected>-- Choisir un trajet --</option>
+                    <option value="{{travel.id}}" ng-repeat="travel in listeTravels">{{travel.id}} {{travel.from }} - {{ travel.to }}</option>
+                </select><br><br>
+
+                <label>Gyroscope</label>
+
+                <div style="width:600px !important;height:300px !important;">
+                    <canvas id="chartGyro" ></canvas>
+                </div>
+
+                <br><br>
+                <label>Accéléromètre</label>
+
+                 <div style="width:600px !important;height:300px !important;">
+                    <canvas id="chartAccel" ></canvas>
+                </div>
+
+
+                <br>
+            </div>
+        </form>
+    </div>
+    <div class="col-lg-6">
+
+        <ui-gmap-google-map center="map.center" zoom="map.zoom" options="options">
+            <ui-gmap-polyline ng-repeat="p in polylines" path="p.path" stroke="p.stroke" visible='p.visible'
+                  geodesic='p.geodesic' fit="false" editable="p.editable" draggable="p.draggable" icons='p.icons'></ui-gmap-polyline>
+
+            <ui-gmap-circle ng-repeat="c in circles track by c.id" center="c.center" stroke="c.stroke" fill="c.fill" radius="c.radius"
+                visible="c.visible" geodesic="c.geodesic" editable="false" draggable="false" clickable="c.clickable" control="c.control"></ui-gmap-circle>
+        </ui-gmap-google-map>
+
+    </div>
+
+</div>
+
+<footer style="text-align:center; padding-top:20px;">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 col-sm-12">
+                <div class="copy">
+                    Copyright &copy; 2016 Projet Embarqué
+                </div>
+                <div class="copy">
+                    Tous droits réservés.
+                </div>
+            </div>
+        </div> <!-- /.row -->
+    </div> <!-- /.container -->
+</footer>
