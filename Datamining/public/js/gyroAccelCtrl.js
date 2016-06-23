@@ -26,7 +26,7 @@ dataminingApp.controller('gyroAccelCtrl', ['$scope', '$routeParams', 'uiGmapGoog
                 {
                     id: 1,
                     path:  $scope.path,
-                    stroke: { color: '#6060FB', weight: 1 },
+                    stroke: { color: '#6060FB', weight: 30 },
                     editable: false,
                     draggable: false,
                     geodesic: true,
@@ -257,6 +257,17 @@ dataminingApp.controller('gyroAccelCtrl', ['$scope', '$routeParams', 'uiGmapGoog
                     var dateFinStop = arrayLatLong[stopstartends[i].stop].corresp[0].value.timestamp;
                     var tempsPasseSecondes = dateFinStop - dateDebutStop;
 
+                    var d = moment.duration(tempsPasseSecondes, 'milliseconds');
+                    var hours = Math.floor(d.asHours());
+                    var mins = Math.floor(d.asMinutes()) - hours * 60;
+                    var tempPasse = hour + ":" + mins;
+
+                    var dataStop = {
+                        dateDebutStop: dateDebutStop,
+                        dateFinStop: dateFinStop,
+                        tempPasse: tempPasse
+                    };
+
 
                     $scope.circles.push({
                         id: idCircle,
@@ -294,11 +305,19 @@ dataminingApp.controller('gyroAccelCtrl', ['$scope', '$routeParams', 'uiGmapGoog
             var datasetAccelZ = [];
             var labelsChartAccel = [];
 
+            var seuilGyro = 100;
+            if (_.maxBy(data, function(d) { return d.value.gyro_roll }).value.gyro_roll < 300)
+                seuilGyro = 80;
+
+            var seuilAccel = 100;
+            if (_.maxBy(data, function(d) { return d.value.accel_x }).value.accel_x < 100)
+                seuilAccel = 10;
+
             for (var i=0; i<data.length; i++) {
                 if (datasetGyroX.length == 0
-                    || (data[i].value.gyro_roll > datasetGyroX[datasetGyroX.length-1] + 100 || data[i].value.gyro_roll < datasetGyroX[datasetGyroX.length-1] - 100)
-                    || (data[i].value.gyro_pitch > datasetGyroY[datasetGyroY.length-1] + 100 || data[i].value.gyro_pitch < datasetGyroY[datasetGyroY.length-1] - 100)
-                    || (data[i].value.gyro_yaw > datasetGyroZ[datasetGyroZ.length-1] + 100 || data[i].value.gyro_yaw < datasetGyroZ[datasetGyroZ.length-1] - 100)
+                    || (data[i].value.gyro_roll > datasetGyroX[datasetGyroX.length-1] + seuilGyro || data[i].value.gyro_roll < datasetGyroX[datasetGyroX.length-1] - seuilGyro)
+                    || (data[i].value.gyro_pitch > datasetGyroY[datasetGyroY.length-1] + seuilGyro || data[i].value.gyro_pitch < datasetGyroY[datasetGyroY.length-1] - seuilGyro)
+                    || (data[i].value.gyro_yaw > datasetGyroZ[datasetGyroZ.length-1] + seuilGyro || data[i].value.gyro_yaw < datasetGyroZ[datasetGyroZ.length-1] - seuilGyro)
                 ) {
                     datasetGyroX.push(data[i].value.gyro_roll);
                     datasetGyroY.push(data[i].value.gyro_pitch);
@@ -307,9 +326,9 @@ dataminingApp.controller('gyroAccelCtrl', ['$scope', '$routeParams', 'uiGmapGoog
                 }
 
                 if (datasetAccelX.length == 0
-                    || (data[i].value.accel_x > datasetAccelX[datasetAccelX.length-1] + 100 || data[i].value.accel_x < datasetAccelX[datasetAccelX.length-1] - 100)
-                    || (data[i].value.accel_y > datasetAccelY[datasetAccelY.length-1] + 100 || data[i].value.accel_y < datasetAccelY[datasetAccelY.length-1] - 100)
-                    || (data[i].value.accel_z > datasetAccelZ[datasetAccelZ.length-1] + 100 || data[i].value.accel_z < datasetAccelZ[datasetAccelZ.length-1] - 100)
+                    || (data[i].value.accel_x > datasetAccelX[datasetAccelX.length-1] + seuilAccel || data[i].value.accel_x < datasetAccelX[datasetAccelX.length-1] - seuilAccel)
+                    || (data[i].value.accel_y > datasetAccelY[datasetAccelY.length-1] + seuilAccel || data[i].value.accel_y < datasetAccelY[datasetAccelY.length-1] - seuilAccel)
+                    || (data[i].value.accel_z > datasetAccelZ[datasetAccelZ.length-1] + seuilAccel || data[i].value.accel_z < datasetAccelZ[datasetAccelZ.length-1] - seuilAccel)
                 ) {
                     datasetAccelX.push(data[i].value.accel_x);
                     datasetAccelY.push(data[i].value.accel_y);

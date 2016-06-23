@@ -28,7 +28,7 @@ dataminingApp.controller('accueilCtrl', ['$scope', '$routeParams', 'uiGmapGoogle
                 {
                     id: 1,
                     path:  $scope.path,
-                    stroke: { color: '#6060FB', weight: 1 },
+                    stroke: { color: '#6060FB', weight: 10 },
                     editable: false,
                     draggable: false,
                     geodesic: true,
@@ -108,8 +108,8 @@ dataminingApp.controller('accueilCtrl', ['$scope', '$routeParams', 'uiGmapGoogle
 
                 //Travel Infos
                 $scope.travelInfos = {
-                    startTime: formatDate(new Date(ob[0].value.timestamp*1000)),
-                    endTime: formatDate(new Date(ob[ob.length-1].value.timestamp*1000)),
+                    startTime: formatDate(new Date(ob[0].value.timestamp)),
+                    endTime: formatDate(new Date(ob[ob.length-1].value.timestamp)),
                     minTemp : _.minBy(ob, function(o) { return o.value.temperature; }).value.temperature,
                     maxTemp: _.maxBy(ob, function(o) { return o.value.temperature; }).value.temperature,
                     meanTemp: _.meanBy(ob, function(o) { return o.value.temperature; }).toString().substr(0,5),
@@ -300,6 +300,7 @@ dataminingApp.controller('accueilCtrl', ['$scope', '$routeParams', 'uiGmapGoogle
                         id : i,
                         latitude: latitude,
                         longitude: longitude,
+                        icon: "public/images/circle_green.png",
                         options: {
                             clickable : true
                         },
@@ -308,10 +309,12 @@ dataminingApp.controller('accueilCtrl', ['$scope', '$routeParams', 'uiGmapGoogle
                                 for(var i = 0; i< $scope.randomMarkers.length; i++){
                                     $scope.randomMarkers[i].options = {};
                                 }
-                                marker.model.options = {
-                                    labelContent: "latitude : "+ latitude + "<br/> longitude : " + longitude + "<br/>temps passé : " + option,
-                                    labelClass: "labelClass"
-                                };
+                                if (!marker.labelContent) {
+                                    marker.model.options = {
+                                        labelContent: "<b>Point d'arrêt</b><br/>Heure d'arrivée : "+ moment(option.dateDebutStop).format("d/MM h:mm") + "<br/> Heure de départ : " + moment(option.dateFinStop).format("d/MM h:mm") + "<br/>Temps passé : " + option.tempPasse,
+                                        labelClass: "labelClass"
+                                    };
+                                }
                             }
                         }
                     };
@@ -320,21 +323,26 @@ dataminingApp.controller('accueilCtrl', ['$scope', '$routeParams', 'uiGmapGoogle
 
                 for (var i=0; i<stopstartends.length; i++) {
 
-                    var dateDebutStop = arrayLatLong[stopstartends[i].start].corresp[0].value.timestamp;
-                    var dateFinStop = arrayLatLong[stopstartends[i].stop].corresp[0].value.timestamp;
-                    var tempsPasseSecondes = dateFinStop - dateDebutStop;
+                    var dateDebutStop = new Date(arrayLatLong[stopstartends[i].start].corresp[0].value.timestamp);
+                    var dateFinStop = new Date(arrayLatLong[stopstartends[i].stop].corresp[0].value.timestamp);
+                    var tempsPasseSecondes = dateFinStop.getTime() - dateDebutStop.getTime();
 
-                   /*markers.push({
-                        id: idMarker,
-                        idKey: idMarker,
-                        coords: { latitude: arrayLatLong[stopstartends[i].start].latitude, longitude: arrayLatLong[stopstartends[i].start].longitude}
-                    });
-                    idMarker++;*/
-                    markers.push(createRandomMarker(i, tempsPasseSecondes));
+                    var d = moment.duration(tempsPasseSecondes, 'milliseconds');
+                    var hours = Math.floor(d.asHours());
+                    var mins = Math.floor(d.asMinutes()) - hours * 60;
+                    var tempPasse = hours + ":" + mins;
+
+                    var dataStop = {
+                        dateDebutStop: dateDebutStop,
+                        dateFinStop: dateFinStop,
+                        tempPasse: tempPasse
+                    };
+
+                    markers.push(createRandomMarker(i, dataStop));
                 }
 
                  $scope.randomMarkers = markers;
-                  
+
                 //Chart
                 displayTemperatureHumidityChart(ob);
             });
@@ -347,10 +355,10 @@ dataminingApp.controller('accueilCtrl', ['$scope', '$routeParams', 'uiGmapGoogle
             var labelsChart = [];
 
             for (var i=0; i<data.length; i++) {
-                if (datasetChartT.length == 0 || (data[i].value.temperature != datasetChartT[datasetChartT.length-1]) && data[i].value.timestamp*1000 >  labelsChart[labelsChart.length-1].getTime() + 2*60*1000) {
+                if (datasetChartT.length == 0 || (data[i].value.temperature != datasetChartT[datasetChartT.length-1]) && (new Date(data[i].value.timestamp)).getTime() >  labelsChart[labelsChart.length-1].getTime() + 2*60) {
                     datasetChartT.push(data[i].value.temperature );
                     datasetChartH.push(data[i].value.humidity );
-                    labelsChart.push(new Date(data[i].value.timestamp*1000));
+                    labelsChart.push(new Date(data[i].value.timestamp));
                 }
             }
 
@@ -419,255 +427,6 @@ dataminingApp.controller('accueilCtrl', ['$scope', '$routeParams', 'uiGmapGoogle
 
              if (path.length > 0) path = [];
 
-
-            Datalog.getByTemperatureAndHumidity( {listeKeys: listeKeys}, function(ob) {
-
-                console.log("data received !");
-
-                var d = _.orderBy(ob, ['doc.id'], ['asc']);
-
-                console.log("data order by !");
-
-                    /*var data2 = [];
-                    for (var i=0; i<ob.length; i++) {
-                        data2.push([ob[i].value.lat, ob[i].value.long]);
-                    }
-
-                    console.log(data2);
-
-
-                    var result = ml.kmeans.cluster({
-                        data : data2,
-                        k : 4,
-                        epochs: 100,
-                        init_using_data : true, // this is default
-                        distance : {type : "euclidean"}
-                    });
-
-                    console.log("clusters : ", result.clusters);
-
-                    for (var i=0; i< result.clusters.length; i++) {
-                        if (result.clusters[i].length > 100) {
-
-
-                            for (var j=0; j<result.clusters[i].length; j++) {
-                                 path.push({ latitude: data2[result.clusters[i][j]][0], longitude: data2[result.clusters[i][j]][1] });
-                            }
-                        }
-                    }*/
-
-
-                    var lastlat = 0, lastlong = 0;
-
-                    for(var i =0; i<(d.length) ; i++){
-                      var p = { latitude: d[i].value.lat, longitude: d[i].value.long};
-
-                      if (p.latitude<-180 || p.latitude > 180 || p.longitude<-180 || p.longitude > 180  )
-                        continue;
-                      if (lastlat != 0 || lastlong != 0)
-                      {
-                          if (lastlat == p.latitude && lastlong == p.longitude)
-                          continue;
-                      }
-                      var toadd = true;
-                        if (i != 0 && Math.abs(p.latitude - lastlat) > 0.2)
-                          toadd = false;
-                        if (i != 0 && Math.abs(p.longitude - lastlong) > 0.2)
-                          toadd = false;
-
-                     if (!toadd)
-                        continue;
-                        lastlat = p.latitude;
-                        lastlong = p.longitude;
-                        path.push(p);
-                    }
-                    console.log("path rempli !");
-
-
-                    var datasetChartT = [];
-                    var datasetChartH = [];
-                    var labelsChart = [];
-
-                    var datasetGyroX = [];
-                    var datasetGyroY = [];
-                    var datasetGyroZ = [];
-                    var labelsChart2 = [];
-                    for (var i=0; i<d.length; i++) {
-                        if (datasetChartT.length == 0 || (d[i].doc.Temperature != datasetChartT[datasetChartT.length-1]) && d[i].doc.DateHeure*1000 >  labelsChart[labelsChart.length-1].getTime() + 2*60*1000) {
-                            datasetChartT.push(d[i].doc.Temperature );
-                            datasetChartH.push(d[i].doc.Humidite );
-                            labelsChart.push(new Date(d[i].doc.DateHeure*1000));
-                        }
-
-
-                        if (datasetGyroX.length == 0
-                            || (d[i].doc.Gyro_roll > datasetGyroX[datasetGyroX.length-1] + 100 || d[i].doc.Gyro_roll < datasetGyroX[datasetGyroX.length-1] - 100)
-                            || (d[i].doc.Gyro_pitch > datasetGyroY[datasetGyroY.length-1] + 100 || d[i].doc.Gyro_pitch < datasetGyroY[datasetGyroY.length-1] - 100)
-                            || (d[i].doc.Gyro_yaw > datasetGyroZ[datasetGyroZ.length-1] + 100 || d[i].doc.Gyro_yaw < datasetGyroZ[datasetGyroZ.length-1] - 100)
-                        ) {
-                            datasetGyroX.push(d[i].doc.Gyro_roll);
-                            datasetGyroY.push(d[i].doc.Gyro_pitch);
-                            datasetGyroZ.push(d[i].doc.Gyro_yaw);
-                            labelsChart2.push(new Date(d[i].doc.DateHeure*1000));
-                        }
-
-
-                    }
-
-                    var dataChart = {
-                        labels: labelsChart,
-                        datasets: [
-                            {
-                                label: "Évolution de la température",
-                                fill: false,
-                                lineTension: 0.5,
-                                borderColor: "rgba(75,192,192,1)",
-                                borderCapStyle: 'butt',
-                                borderDash: [],
-                                borderDashOffset: 0.0,
-                                borderJoinStyle: 'miter',
-                                pointBorderColor: "rgba(75,192,192,1)",
-                                pointBackgroundColor: "#fff",
-                                pointBorderWidth: 1,
-                                pointHoverRadius: 5,
-                                pointHoverBackgroundColor: "rgba(75,192,192,1)",
-                                pointHoverBorderColor: "rgba(220,220,220,1)",
-                                pointHoverBorderWidth: 2,
-                                pointRadius: 1,
-                                pointHitRadius: 10,
-                                data: datasetChartT,
-                            },
-                            {
-                                label: "Évolution du taux d'humidité",
-                                fill: false,
-                                lineTension: 0.9,
-                                borderColor: "rgba(125,92,192,1)",
-                                borderCapStyle: 'butt',
-                                borderDash: [],
-                                borderDashOffset: 0.0,
-                                borderJoinStyle: 'miter',
-                                pointBorderColor: "rgba(125,92,192,1)",
-                                pointBackgroundColor: "#fff",
-                                pointBorderWidth: 1,
-                                pointHoverRadius: 5,
-                                pointHoverBackgroundColor: "rgba(125,92,192,1)",
-                                pointHoverBorderColor: "rgba(220,220,220,1)",
-                                pointHoverBorderWidth: 2,
-                                pointRadius: 1,
-                                pointHitRadius: 10,
-                                data: datasetChartH,
-                            }
-
-                        ]
-                    };
-
-
-                    var dataChart2 = {
-                        labels: labelsChart2,
-                        datasets: [
-                            {
-                                label: "X",
-                                fill: false,
-                                lineTension: 0.5,
-                                borderColor: "rgba(75,192,192,1)",
-                                borderCapStyle: 'butt',
-                                borderDash: [],
-                                borderDashOffset: 0.0,
-                                borderJoinStyle: 'miter',
-                                pointBorderColor: "rgba(75,192,192,1)",
-                                pointBackgroundColor: "#fff",
-                                pointBorderWidth: 1,
-                                pointHoverRadius: 5,
-                                pointHoverBackgroundColor: "rgba(75,192,192,1)",
-                                pointHoverBorderColor: "rgba(220,220,220,1)",
-                                pointHoverBorderWidth: 2,
-                                pointRadius: 1,
-                                pointHitRadius: 10,
-                                data: datasetGyroX,
-                            },
-                            {
-                                label: "Y",
-                                fill: false,
-                                lineTension: 0.9,
-                                borderColor: "rgba(125,92,192,1)",
-                                borderCapStyle: 'butt',
-                                borderDash: [],
-                                borderDashOffset: 0.0,
-                                borderJoinStyle: 'miter',
-                                pointBorderColor: "rgba(125,92,192,1)",
-                                pointBackgroundColor: "#fff",
-                                pointBorderWidth: 1,
-                                pointHoverRadius: 5,
-                                pointHoverBackgroundColor: "rgba(125,92,192,1)",
-                                pointHoverBorderColor: "rgba(220,220,220,1)",
-                                pointHoverBorderWidth: 2,
-                                pointRadius: 1,
-                                pointHitRadius: 10,
-                                data: datasetGyroY,
-                            },
-                            {
-                                label: "Z",
-                                fill: false,
-                                lineTension: 0.9,
-                                borderColor: "rgba(125,92,92,1)",
-                                borderCapStyle: 'butt',
-                                borderDash: [],
-                                borderDashOffset: 0.0,
-                                borderJoinStyle: 'miter',
-                                pointBorderColor: "rgba(125,92,92,1)",
-                                pointBackgroundColor: "#fff",
-                                pointBorderWidth: 1,
-                                pointHoverRadius: 5,
-                                pointHoverBackgroundColor: "rgba(125,92,92,1)",
-                                pointHoverBorderColor: "rgba(220,220,220,1)",
-                                pointHoverBorderWidth: 2,
-                                pointRadius: 1,
-                                pointHitRadius: 10,
-                                data: datasetGyroZ,
-                            }
-
-                        ]
-                    };
-
-                    if (myLineChart) myLineChart.destroy();
-                    if (myLineChart2) myLineChart2.destroy();
-
-                    myLineChart = new Chart(ctx, {
-                        type: 'line',
-                        data: dataChart2,
-                        options: {
-                            scales: {
-                                xAxes: [{
-                                    type: 'time',
-                                    time: {
-                                        displayFormats: {
-                                            quarter: 'h:mm:ss ll MMM YYYY'
-                                        }
-                                    }
-                                }]
-                            }
-                        }
-                    });
-
-
-                    myLineChart2 = new Chart(ctx2, {
-                        type: 'line',
-                        data: dataChart,
-                        options: {
-                            scales: {
-                                xAxes: [{
-                                    type: 'time',
-                                    time: {
-                                        displayFormats: {
-                                            quarter: 'h:mm:ss ll MMM YYYY'
-                                        }
-                                    }
-                                }]
-                            }
-                        }
-                    });
-
-            });
         }
     }
 ]);

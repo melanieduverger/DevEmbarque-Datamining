@@ -50,8 +50,9 @@ var DATABASE_NAME = "datalogtest";
 
 var ARRAY_TRAVEL_ASSOCIATION = {
     24: { from: "Orléans", to: "Aix-en-Provence" },
-    25: { from: "Orléans", to: "Strasbourg" },
-    26: { from: "Pau", to: "Saint Nazaire" },
-    29: { from: "Pau", to: "Rouen" }
+    //25: { from: "Orléans", to: "Strasbourg" },
+    //26: { from: "Pau", to: "Saint Nazaire" },
+    //29: { from: "Pau", to: "Rouen" },
+    31: { from: "Pau", to: "Rouen" }
 };
 
