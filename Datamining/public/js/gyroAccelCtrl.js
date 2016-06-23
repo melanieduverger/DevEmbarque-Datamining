@@ -6,10 +6,20 @@ dataminingApp.controller('gyroAccelCtrl', ['$scope', '$routeParams', 'uiGmapGoog
         var ctxAccel = document.getElementById("chartAccel");
         var myLineChartAccel;
 
+        $scope.map = {center: {latitude: 47.845114, longitude: 1.940584 }, zoom: 14 };
+        $scope.options = {scrollwheel: true};
         $scope.polylines = [];
         $scope.circles = [];
         var idCircle = 1;
         $scope.path = [];
+        $scope.markersGyroTab = [];
+        $scope.idMarkerGyro = 1;
+        $scope.markersAccelTab = [];
+        $scope.idMarkerAccel = 1;
+
+        var data = [];
+
+        $scope.isTravel = false;
 
         GoogleMapApi.then(function(maps) {
           $scope.polylines = [
@@ -48,12 +58,15 @@ dataminingApp.controller('gyroAccelCtrl', ['$scope', '$routeParams', 'uiGmapGoog
         };
 
         $scope.getDetailsTravel = function(idTravel) {
+            $scope.isTravel = false;
             if ($scope.path.length > 0) $scope.path = []; //On vide la carte si elle a déja été utilisée
             if ($scope.circles.length > 0) $scope.circles = [];
 
 
             Datalog.getById( { startId: idTravel, endId: idTravel+"9999999" }, function(ob) {
                 console.log("data details received !");
+
+                data = ob;
 
                 //Travel Infos
                 $scope.travelInfos = {
@@ -262,37 +275,11 @@ dataminingApp.controller('gyroAccelCtrl', ['$scope', '$routeParams', 'uiGmapGoog
                 //Charts
                 displayCharts(ob);
 
+                $scope.isTravel = true;
+
 
             });
         }
-
-
-
-        $scope.map = {center: {latitude: 47.845114, longitude: 1.940584 }, zoom: 14 };
-        $scope.options = {scrollwheel: true};
-        $scope.polylines = [];
-        $scope.path = [];
-
-        GoogleMapApi.then(function(maps) {
-          $scope.polylines = [
-                {
-                    id: 1,
-                    path:  $scope.path,
-                    stroke: { color: '#6060FB', weight: 1 },
-                    editable: false,
-                    draggable: false,
-                    geodesic: true,
-                    visible: true,
-                    icons: [{
-                        icon: {
-                            path: google.maps.SymbolPath.FORWARD_OPEN_ARROW
-                        },
-                        offset: '25px',
-                        repeat: '50px'
-                    }]
-                }
-            ];
-        });
 
 
         var displayCharts = function(data) {
@@ -465,6 +452,54 @@ dataminingApp.controller('gyroAccelCtrl', ['$scope', '$routeParams', 'uiGmapGoog
                     }
                 }
             });
+        };
+
+
+        $scope.displayGyro = function() {
+
+            $scope.markersGyroTab = [];
+            $scope.markersAccelTab = [];
+
+            if (!$scope.seuilpitch) $scope.seuilpitch = -40000;
+            if (!$scope.seuilroll) $scope.seuilroll = -40000;
+            if (!$scope.seuilyaw) $scope.seuilyaw = -40000;
+
+            var dataSeuilDepasse = _.filter(data, function(o) {
+                return o.value.gyro_pitch >= $scope.seuilpitch
+                    && o.value.gyro_roll >= $scope.seuilroll
+                    && o.value.gyro_yaw >= $scope.seuilyaw
+                 }
+            );
+
+            $scope.markersGyroTab = dataSeuilDepasse.map(function(data) {
+                $scope.idMarkerGyro++;
+                return { id: $scope.idMarkerGyro, latitude: data.value.lat, longitude: data.value.long, icon: "public/images/circle_red.png" };
+            });
+
+        };
+
+        $scope.displayAccel = function() {
+
+            $scope.markersGyroTab = [];
+            $scope.markersAccelTab = [];
+
+            if (!$scope.seuilx) $scope.seuilx = -40000;
+            if (!$scope.seuily) $scope.seuily = -40000;
+            if (!$scope.seuilz) $scope.seuilz = -40000;
+
+            var dataSeuilDepasse = _.filter(data, function(o) {
+                return o.value.accel_x >= $scope.seuilx
+                    && o.value.accel_y >= $scope.seuily
+                    && o.value.accel_z >= $scope.seuilz
+                 }
+            );
+
+            $scope.markersAccelTab = dataSeuilDepasse.map(function(data) {
+                $scope.idMarkerAccel++;
+                return { id: $scope.idMarkerAccel, latitude: data.value.lat, longitude: data.value.long, icon: "public/images/circle_blue.png" };
+            });
+
+
         };
 
     }

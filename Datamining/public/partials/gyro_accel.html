@@ -20,10 +20,19 @@
                     <option value="{{travel.id}}" ng-repeat="travel in listeTravels">{{travel.id}} {{travel.from }} - {{ travel.to }}</option>
                 </select><br><br>
 
+
+
                 <label>Gyroscope</label>
 
                 <div style="width:600px !important;height:300px !important;">
                     <canvas id="chartGyro" ></canvas>
+                </div>
+
+                <div ng-show="isTravel">
+                    <label>Seuil roll : </label><input type="text" ng-model="seuilroll"/>
+                    <label>Seuil pitch : </label><input type="text" ng-model="seuilpitch"/>
+                    <label>Seuil yaw : </label><input type="text" ng-model="seuilyaw"/>
+                    <input type="button" value="Afficher sur la carte" ng-click="displayGyro()"/>
                 </div>
 
                 <br><br>
@@ -31,6 +40,13 @@
 
                  <div style="width:600px !important;height:300px !important;">
                     <canvas id="chartAccel" ></canvas>
+                </div>
+
+                <div ng-show="isTravel">
+                    <label>Seuil X : </label><input type="text" ng-model="seuilx"/>
+                    <label>Seuil Y : </label><input type="text" ng-model="seuily"/>
+                    <label>Seuil Z : </label><input type="text" ng-model="seuilz"/>
+                    <input type="button" value="Afficher sur la carte" ng-click="displayAccel()"/>
                 </div>
 
 
@@ -46,6 +62,14 @@
 
             <ui-gmap-circle ng-repeat="c in circles track by c.id" center="c.center" stroke="c.stroke" fill="c.fill" radius="c.radius"
                 visible="c.visible" geodesic="c.geodesic" editable="false" draggable="false" clickable="c.clickable" control="c.control"></ui-gmap-circle>
+
+             <ui-gmap-markers models="markersGyroTab" coords="'self'" icon="'icon'">
+                </ui-gmap-markers>
+
+                <ui-gmap-markers models="markersAccelTab" coords="'self'" icon="'icon'">
+                </ui-gmap-markers>
+
+
         </ui-gmap-google-map>
 
     </div>
