@@ -18,8 +18,8 @@ dataminingApp.controller('accueilCtrl', ['$scope', '$routeParams', 'uiGmapGoogle
         $scope.options = {scrollwheel: true};
         $scope.polylines = [];
 
-        $scope.circles = [];
-        var idCircle = 1;
+        $scope.randomMarkers = [];
+        var idMarker = 1;
 
         $scope.path = [];
 
@@ -99,8 +99,8 @@ dataminingApp.controller('accueilCtrl', ['$scope', '$routeParams', 'uiGmapGoogle
              $scope.showTravelInfos = false;
 
 
-            if ($scope.path.length > 0) $scope.path = []; //On vide la carte si elle a déja été utilisée
-            if ($scope.circles.length > 0) $scope.circles = [];
+           if ($scope.path.length > 0) $scope.path = []; //On vide la carte si elle a déja été utilisée
+           //if ($scope.randomMarkers.length > 0) $scope.randomMarkers = [];
 
 
             Datalog.getById( { startId: idTravel, endId: idTravel+"9999999" }, function(ob) {
@@ -292,6 +292,31 @@ dataminingApp.controller('accueilCtrl', ['$scope', '$routeParams', 'uiGmapGoogle
 
 
 
+                var markers = [];
+                var createRandomMarker = function(i, option){
+                    var latitude = arrayLatLong[stopstartends[i].start].latitude;
+                    var longitude = arrayLatLong[stopstartends[i].start].longitude;
+                    var ret = {
+                        id : i,
+                        latitude: latitude,
+                        longitude: longitude,
+                        options: {
+                            clickable : true
+                        },
+                        events: {
+                            click: function (marker, eventName, args) {
+                                for(var i = 0; i< $scope.randomMarkers.length; i++){
+                                    $scope.randomMarkers[i].options = {};
+                                }
+                                marker.model.options = {
+                                    labelContent: "latitude : "+ latitude + "<br/> longitude : " + longitude + "<br/>temps passé : " + option,
+                                    labelClass: "labelClass"
+                                };
+                            }
+                        }
+                    };
+                    return ret;
+                }
 
                 for (var i=0; i<stopstartends.length; i++) {
 
@@ -299,19 +324,17 @@ dataminingApp.controller('accueilCtrl', ['$scope', '$routeParams', 'uiGmapGoogle
                     var dateFinStop = arrayLatLong[stopstartends[i].stop].corresp[0].value.timestamp;
                     var tempsPasseSecondes = dateFinStop - dateDebutStop;
 
-                    $scope.circles.push({
-                        id: idCircle,
-                        center: { latitude: arrayLatLong[stopstartends[i].start].latitude, longitude: arrayLatLong[stopstartends[i].start].longitude },
-                        radius: 50,
-                        stroke: { color: '#08B21F', weight: 2, opacity: 1 },
-                        fill: { color: '#08B21F', opacity: 0.5 },
-                        clickable: true // optional: defaults to true
-
+                   /*markers.push({
+                        id: idMarker,
+                        idKey: idMarker,
+                        coords: { latitude: arrayLatLong[stopstartends[i].start].latitude, longitude: arrayLatLong[stopstartends[i].start].longitude}
                     });
-                    idCircle++;
+                    idMarker++;*/
+                    markers.push(createRandomMarker(i, tempsPasseSecondes));
                 }
 
-
+                 $scope.randomMarkers = markers;
+                  
                 //Chart
                 displayTemperatureHumidityChart(ob);
             });

@@ -90,8 +90,10 @@
                 <ui-gmap-polyline ng-repeat="p in polylines" path="p.path" stroke="p.stroke" visible='p.visible'
                       geodesic='p.geodesic' fit="false" editable="p.editable" draggable="p.draggable" icons='p.icons'></ui-gmap-polyline>
 
-                <ui-gmap-circle ng-repeat="c in circles track by c.id" center="c.center" stroke="c.stroke" fill="c.fill" radius="c.radius"
-                    visible="c.visible" editable="false" draggable="false" clickable="c.clickable"  events="c.events"></ui-gmap-circle>
+                <!--<ui-gmap-circle ng-repeat="c in circles track by c.id" center="c.center" stroke="c.stroke" fill="c.fill" radius="c.radius"
+                    visible="c.visible" editable="false" draggable="false" clickable="c.clickable"  events="c.events"></ui-gmap-circle>-->
+                    <ui-gmap-markers models="randomMarkers" coords="'self'" icon="'icon'" options="'options'" events="'events'" click="'click'">
+                    </ui-gmap-markers>
             </ui-gmap-google-map>
         </div>
     </div>
