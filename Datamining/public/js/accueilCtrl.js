@@ -10,6 +10,7 @@ dataminingApp.controller('accueilCtrl', ['$scope', '$routeParams', 'uiGmapGoogle
 
         $scope.tabHumidVide = true;
         $scope.tabTempVide = true;
+        $scope.showTravelInfos = false;
 
         var ctx = document.getElementById("chart");
         var myLineChart;
@@ -48,6 +49,9 @@ dataminingApp.controller('accueilCtrl', ['$scope', '$routeParams', 'uiGmapGoogle
 
 
         $scope.changeTemperature = function() {
+            $scope.dataHumidityTravels = [];
+            $scope.tabHumidVide = true;
+
             Datalog.getByTemperature( { startTemp: $scope.temp.min, endTemp: $scope.temp.max }, function(ob) {
                 console.log("data travels received !");
                 //données regroupées par trajet
@@ -68,6 +72,9 @@ dataminingApp.controller('accueilCtrl', ['$scope', '$routeParams', 'uiGmapGoogle
         };
 
         $scope.changeHumidity = function() {
+            $scope.dataTempTravels = [];
+            $scope.tabTempVide = true;
+
             Datalog.getByHumidity( { startHumidity: $scope.humidite.min, endHumidity: $scope.humidite.max }, function(ob) {
                 console.log("data travels received !");
                 //données regroupées par trajet
@@ -88,6 +95,10 @@ dataminingApp.controller('accueilCtrl', ['$scope', '$routeParams', 'uiGmapGoogle
         };
 
         $scope.getDetailsTravel = function(idTravel) {
+
+             $scope.showTravelInfos = false;
+
+
             if ($scope.path.length > 0) $scope.path = []; //On vide la carte si elle a déja été utilisée
             if ($scope.circles.length > 0) $scope.circles = [];
 
@@ -106,6 +117,7 @@ dataminingApp.controller('accueilCtrl', ['$scope', '$routeParams', 'uiGmapGoogle
                     maxHum: _.maxBy(ob, function(o) { return o.value.humidity; }).value.humidity,
                     meanHum: _.meanBy(ob, function(o) { return o.value.humidity; }).toString().substr(0,5),
                 }
+                 $scope.showTravelInfos = true;
 
                 //Carte
                 var lastlat = 0, lastlong = 0;
@@ -278,12 +290,14 @@ dataminingApp.controller('accueilCtrl', ['$scope', '$routeParams', 'uiGmapGoogle
                     }]
                 });
 
+
+
+
                 for (var i=0; i<stopstartends.length; i++) {
 
                     var dateDebutStop = arrayLatLong[stopstartends[i].start].corresp[0].value.timestamp;
                     var dateFinStop = arrayLatLong[stopstartends[i].stop].corresp[0].value.timestamp;
                     var tempsPasseSecondes = dateFinStop - dateDebutStop;
-
 
                     $scope.circles.push({
                         id: idCircle,
@@ -291,10 +305,8 @@ dataminingApp.controller('accueilCtrl', ['$scope', '$routeParams', 'uiGmapGoogle
                         radius: 50,
                         stroke: { color: '#08B21F', weight: 2, opacity: 1 },
                         fill: { color: '#08B21F', opacity: 0.5 },
-                        geodesic: true, // optional: defaults to false
-                        clickable: true, // optional: defaults to true
-                        visible: true, // optional: defaults to true
-                        control: {}
+                        clickable: true // optional: defaults to true
+
                     });
                     idCircle++;
                 }

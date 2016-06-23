@@ -56,13 +56,13 @@
             </div>
         </form>
 
-        <div style="width:800px !important;height:600px !important;">
+        <div style="width:700px !important;height:600px !important;">
             <canvas id="chart" ></canvas>
         </div>
 
     </div>
     <div class="col-lg-6">
-        <div class="col-lg-12">
+        <div class="col-lg-12" ng-show="showTravelInfos">
             <h1>Informations sur le trajet</h1>
 
             <div class="col-lg-6">
@@ -91,7 +91,7 @@
                       geodesic='p.geodesic' fit="false" editable="p.editable" draggable="p.draggable" icons='p.icons'></ui-gmap-polyline>
 
                 <ui-gmap-circle ng-repeat="c in circles track by c.id" center="c.center" stroke="c.stroke" fill="c.fill" radius="c.radius"
-                    visible="c.visible" geodesic="c.geodesic" editable="false" draggable="false" clickable="c.clickable" control="c.control"></ui-gmap-circle>
+                    visible="c.visible" editable="false" draggable="false" clickable="c.clickable"  events="c.events"></ui-gmap-circle>
             </ui-gmap-google-map>
         </div>
     </div>
