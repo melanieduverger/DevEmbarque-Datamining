@@ -70,8 +70,8 @@ dataminingApp.controller('gyroAccelCtrl', ['$scope', '$routeParams', 'uiGmapGoog
 
                 //Travel Infos
                 $scope.travelInfos = {
-                    startTime: formatDate(new Date(ob[0].value.timestamp*1000)),
-                    endTime: formatDate(new Date(ob[ob.length-1].value.timestamp*1000)),
+                    startTime: formatDate(new Date(ob[0].value.timestamp)),
+                    endTime: formatDate(new Date(ob[ob.length-1].value.timestamp)),
                     minTemp : _.minBy(ob, function(o) { return o.value.temperature; }).value.temperature,
                     maxTemp: _.maxBy(ob, function(o) { return o.value.temperature; }).value.temperature,
                     meanTemp: _.meanBy(ob, function(o) { return o.value.temperature; }).toString().substr(0,5),
@@ -303,7 +303,7 @@ dataminingApp.controller('gyroAccelCtrl', ['$scope', '$routeParams', 'uiGmapGoog
                     datasetGyroX.push(data[i].value.gyro_roll);
                     datasetGyroY.push(data[i].value.gyro_pitch);
                     datasetGyroZ.push(data[i].value.gyro_yaw);
-                    labelsChartGyro.push(new Date(data[i].value.timestamp*1000));
+                    labelsChartGyro.push(new Date(data[i].value.timestamp));
                 }
 
                 if (datasetAccelX.length == 0
@@ -314,7 +314,7 @@ dataminingApp.controller('gyroAccelCtrl', ['$scope', '$routeParams', 'uiGmapGoog
                     datasetAccelX.push(data[i].value.accel_x);
                     datasetAccelY.push(data[i].value.accel_y);
                     datasetAccelZ.push(data[i].value.accel_z);
-                    labelsChartAccel.push(new Date(data[i].value.timestamp*1000));
+                    labelsChartAccel.push(new Date(data[i].value.timestamp));
                 }
             }
 

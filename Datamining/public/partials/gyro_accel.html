@@ -10,45 +10,65 @@
 
 <div class="container-fluid">
     <div class="col-lg-6">
-        <a href="#/public/accueil">Température / Humidité</a>
+        <ul class="nav nav-tabs nav-justified">
+            <li role="presentation"><a href="#/public/accueil">Température / Humidité</a></li>
+            <li role="presentation" class="active"><a href="#/public/gyroaccel">Gyroscope / Accéléromètre</a></li>
+        </ul>
+        
         <form style="padding-top:20px;">
             <div class="form-group">
                 <label>Trajet</label>
 
-                <select name="travel" ng-model="selectedTravel" ng-change="changeTravel()">
+                <select class="form-control" name="travel" ng-model="selectedTravel" ng-change="changeTravel()">
                     <option value="0" selected>-- Choisir un trajet --</option>
                     <option value="{{travel.id}}" ng-repeat="travel in listeTravels">{{travel.id}} {{travel.from }} - {{ travel.to }}</option>
                 </select><br><br>
+                <div class="col-lg-12">
+                    <label>Gyroscope</label>
+                    <div >
+                        <canvas id="chartGyro" ></canvas>
+                    </div>
 
-
-
-                <label>Gyroscope</label>
-
-                <div style="width:600px !important;height:300px !important;">
-                    <canvas id="chartGyro" ></canvas>
+                    <div ng-show="isTravel">
+                        <div class="col-lg-4">
+                            <label>Seuil roll : </label><input class="form-control" type="text" ng-model="seuilroll"/>
+                        </div>
+                        <div class="col-lg-4">
+                            <label>Seuil pitch : </label><input class="form-control" type="text" ng-model="seuilpitch"/>
+                        </div>
+                        <div class="col-lg-4">
+                            <label>Seuil yaw : </label><input class="form-control" type="text" ng-model="seuilyaw"/>
+                        </div>
+                        <div class="col-lg-4">
+                        <br>
+                            <input class="btn btn-primary" type="button" value="Afficher sur la carte" ng-click="displayGyro()"/>
+                        </div>
+                    </div>
                 </div>
+                <br><br><br><br>
+                
+                <div class="col-lg-12" style="margin-top:50px;">
+                    <label>Accéléromètre</label>
+                    <div>
+                        <canvas id="chartAccel" ></canvas>
+                    </div>
 
-                <div ng-show="isTravel">
-                    <label>Seuil roll : </label><input type="text" ng-model="seuilroll"/>
-                    <label>Seuil pitch : </label><input type="text" ng-model="seuilpitch"/>
-                    <label>Seuil yaw : </label><input type="text" ng-model="seuilyaw"/>
-                    <input type="button" value="Afficher sur la carte" ng-click="displayGyro()"/>
+                    <div ng-show="isTravel">
+                        <div class="col-lg-4">
+                            <label>Seuil X : </label><input class="form-control" type="text" ng-model="seuilx"/>
+                        </div>
+                        <div class="col-lg-4">
+                            <label>Seuil Y : </label><input class="form-control" type="text" ng-model="seuily"/>
+                        </div>
+                        <div class="col-lg-4">
+                            <label>Seuil Z : </label><input class="form-control" type="text" ng-model="seuilz"/>
+                        </div>
+                        <div class="col-lg-4">
+                            <br>
+                            <input class="btn btn-primary" type="button" value="Afficher sur la carte" ng-click="displayAccel()"/>
+                        </div>
+                    </div>
                 </div>
-
-                <br><br>
-                <label>Accéléromètre</label>
-
-                 <div style="width:600px !important;height:300px !important;">
-                    <canvas id="chartAccel" ></canvas>
-                </div>
-
-                <div ng-show="isTravel">
-                    <label>Seuil X : </label><input type="text" ng-model="seuilx"/>
-                    <label>Seuil Y : </label><input type="text" ng-model="seuily"/>
-                    <label>Seuil Z : </label><input type="text" ng-model="seuilz"/>
-                    <input type="button" value="Afficher sur la carte" ng-click="displayAccel()"/>
-                </div>
-
 
                 <br>
             </div>
@@ -66,6 +86,7 @@
              <ui-gmap-markers models="markersGyroTab" coords="'self'" icon="'icon'">
                 </ui-gmap-markers>
 
+"
                 <ui-gmap-markers models="markersAccelTab" coords="'self'" icon="'icon'">
                 </ui-gmap-markers>
 
